@@ -9,6 +9,9 @@ class EthereumContractConnector:
 
         self.contract = self.web3.eth.contract(address=self.contract_address, abi=self.abi)
 
+
+
+
     def add_owner(self, email, nid_number, meta_mask_id):
         # Convert string inputs to bytes if needed
         email_bytes = Web3.toBytes(text=email)
@@ -27,15 +30,17 @@ class EthereumContractConnector:
 
         # Transaction successful, you can add additional logic if needed
         print(f"Owner added successfully. Transaction Hash: {transaction_hash}")
+
+
+
+
     
-    def transfer_plot_ownership(self, plot_name, existing_owner_email, new_owner_email):
+    def transfer_plot_ownership(self, plot_name, existing_owner_metamask_id, new_owner_metamask_id):
         # Convert string inputs to bytes if needed
         plot_name_bytes = Web3.toBytes(text=plot_name)
-        existing_owner_email_bytes = Web3.toBytes(text=existing_owner_email)
-        new_owner_email_bytes = Web3.toBytes(text=new_owner_email)
 
         # Call the smart contract function
-        transaction_hash = self.contract.functions.purchasePlot(plot_name_bytes, existing_owner_email_bytes, new_owner_email_bytes).transact()
+        transaction_hash = self.contract.functions.purchasePlot(plot_name_bytes, existing_owner_metamask_id, new_owner_metamask_id).transact()
 
         # Wait for the transaction to be mined
         transaction_receipt = self.web3.eth.waitForTransactionReceipt(transaction_hash)
@@ -46,6 +51,25 @@ class EthereumContractConnector:
 
         # Transaction successful, you can add additional logic if needed
         print(f"Plot ownership transferred successfully. Transaction Hash: {transaction_hash}")
+        
+
+
+
+    
+    def add_plot(self, plot_name, plot_price, owner_metamask_id):
+        # Assuming 'addPlot' function in your smart contract takes three parameters
+        transaction_hash = self.contract.functions.addPlot(
+            plot_name, plot_price, owner_metamask_id
+        ).transact()
+
+        # Wait for the transaction to be mined
+        receipt = self.w3.eth.waitForTransactionReceipt(transaction_hash)
+
+        # Check if the transaction was successful
+        if receipt['status'] != 1:
+            raise Exception(f"Transaction failed: {receipt}")
+
+        return receipt
     
     # def add_plot(self, plot_name, plot_price, owner_metamask_id):
     #     # Assuming 'addPlot' function in your smart contract takes three parameters
@@ -64,18 +88,5 @@ class EthereumContractConnector:
 
     #     return receipt
     
-    def add_plot(self, plot_name, plot_price, owner_metamask_id):
-        # Assuming 'addPlot' function in your smart contract takes three parameters
-        transaction_hash = self.contract.functions.addPlot(
-            plot_name, plot_price, owner_metamask_id
-        ).transact()
-
-        # Wait for the transaction to be mined
-        receipt = self.w3.eth.waitForTransactionReceipt(transaction_hash)
-
-        # Check if the transaction was successful
-        if receipt['status'] != 1:
-            raise Exception(f"Transaction failed: {receipt}")
-
-        return receipt
+    
 
