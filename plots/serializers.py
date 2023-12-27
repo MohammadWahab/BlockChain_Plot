@@ -22,6 +22,24 @@ class PlotSerializer(serializers.ModelSerializer):
         model = Plot
         fields = ['id', 'owner', 'plot_number', 'area', 'price', 'owner_email']
         read_only_fields = ['owner']  # 'owner' is read-only, it will be set by the view
+        
+    def create(self, validated_data):
+        # Pop 'owner_email' from the validated data
+        owner_email = validated_data.pop('owner_email', None)
+
+        # Retrieve or create the owner using the provided email
+        owner = None
+        if owner_email:
+            try:
+                owner = CustomUser.objects.get(email=owner_email)
+            except CustomUser.DoesNotExist:
+                raise serializers.ValidationError(f"No user with email '{owner_email}' found.")
+
+        # Set the owner in the validated data
+        validated_data['owner'] = owner
+
+        # Call the parent create method to create the Plot instance
+        return super(PlotSerializer, self).create(validated_data)
     
 
 class PlotOwnershipTransferSerializer(serializers.Serializer):

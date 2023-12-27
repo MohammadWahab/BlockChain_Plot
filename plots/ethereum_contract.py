@@ -1,10 +1,11 @@
 # ethereum_contract_connector.py
 from web3 import Web3
 
+
 class EthereumContractConnector:
     def __init__(self):
         self.web3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
-        self.contract_address = '0x8B5c72783BF0545445a630c3f95d7dFd664ca979'  # Replace with your actual contract address
+        self.contract_address = '0xE27C6864E65EB02Cb17f2A7e7EE1B37c95A2B325'  # Replace with your actual contract address
         self.abi = [
             {
                 "inputs": [
@@ -87,8 +88,8 @@ class EthereumContractConnector:
         ]
 
         #Default account information
-        self.default_account = '0x90e81EBF1AB81F2306c1d353Fe69183AC62e3a19'
-        self.private_key = '0x6cccd08f84dfcc47132c2aa530266b5ced100a025d361eeb81680afae3b2a42c'
+        self.default_account = '0x9d116Afc638A0d24c43E79b3d3580accE7c5b31c'
+        self.private_key = '0xc3ffc67eb042a6457f36b2c2beed8621ce679173f9961366fbf3d60177388839'
 
 
         # Load the contract
@@ -98,28 +99,25 @@ class EthereumContractConnector:
 
 
     def add_owner(self, email, nid_number, meta_mask_id):
-        # Convert string inputs to bytes if needed
-        email_bytes = Web3.toBytes(text=email)
-        nid_number_bytes = Web3.toBytes(text=nid_number)
-        meta_mask_id_bytes = Web3.toBytes(text=meta_mask_id)
+       
 
         # Call the smart contract function
-        transaction = self.contract.functions.addOwner(email_bytes, nid_number_bytes, meta_mask_id_bytes).buildTransaction({
-            'from': self.default_account,
-            'gas': 2000000,  # Adjust gas value based on your contract requirements
-            'gasPrice': self.web3.toWei('20', 'gwei'),  # Adjust gas price based on your requirements
-            'nonce': self.web3.eth.getTransactionCount(self.default_account),
-           })
+        transaction_data = self.contract.functions.addOwner(email, nid_number, meta_mask_id).build_transaction({
+        'gas': 2000000,  # adjust gas limit accordingly
+        'gasPrice': self.web3.to_wei('20', 'gwei'),  # adjust gas price accordingly
+        'nonce': self.web3.eth.get_transaction_count('0x9d116Afc638A0d24c43E79b3d3580accE7c5b31c'),  # replace with your actual address
+    })
+
 
 
         # Step 2: Sign the transaction data with the private key
         signed_transaction = self.web3.eth.account.sign_transaction(transaction_data, self.private_key)
 
         # Step 3: Send the signed transaction to the Ethereum network
-        transaction_hash = self.web3.eth.sendRawTransaction(signed_transaction.rawTransaction)
+        transaction_hash = self.web3.eth.send_raw_transaction(signed_transaction.rawTransaction)
 
         # Wait for the transaction to be mined
-        transaction_receipt = self.web3.eth.waitForTransactionReceipt(transaction_hash)
+        transaction_receipt = self.web3.eth.wait_for_transaction_receipt(transaction_hash)
        
         print(f"Owner added successfully. Transaction Hash: {transaction_hash}")
 
@@ -128,15 +126,13 @@ class EthereumContractConnector:
 
     
     def transfer_plot_ownership(self, plot_name, existing_owner_metamask_id, new_owner_metamask_id):
-        # Convert string inputs to bytes if needed
-        plot_name_bytes = Web3.toBytes(text=plot_name)
 
         # Call the smart contract function
-        transaction = self.contract.functions.purchasePlot(plot_name_bytes, existing_owner_metamask_id, new_owner_metamask_id).buildTransaction({
+        transaction_data = self.contract.functions.purchasePlot(plot_name, existing_owner_metamask_id, new_owner_metamask_id).build_transaction({
             'from': self.default_account,
             'gas': 2000000,  # Adjust gas value based on your contract requirements
-            'gasPrice': self.web3.toWei('20', 'gwei'),  # Adjust gas price based on your requirements
-            'nonce': self.web3.eth.getTransactionCount(self.default_account),
+            'gasPrice': self.web3.to_wei('20', 'gwei'),  # Adjust gas price based on your requirements
+            'nonce': self.web3.eth.get_transaction_count(self.default_account),
         })
 
 
@@ -144,10 +140,10 @@ class EthereumContractConnector:
         signed_transaction = self.web3.eth.account.sign_transaction(transaction_data, self.private_key)
 
         # Step 3: Send the signed transaction to the Ethereum network
-        transaction_hash = self.web3.eth.sendRawTransaction(signed_transaction.rawTransaction)
+        transaction_hash = self.web3.eth.send_raw_transaction(signed_transaction.rawTransaction)
 
         # Wait for the transaction to be mined
-        transaction_receipt = self.web3.eth.waitForTransactionReceipt(transaction_hash)
+        transaction_receipt = self.web3.eth.wait_for_transaction_receipt(transaction_hash)
 
         # Transaction successful, you can add additional logic if needed
         print(f"Plot ownership transferred successfully. Transaction Hash: {transaction_hash}")
@@ -158,13 +154,13 @@ class EthereumContractConnector:
     
     def add_plot(self, plot_name, plot_price, owner_metamask_id):
         # Assuming 'addPlot' function in your smart contract takes three parameters
-        transaction_hash = self.contract.functions.addPlot(
+        transaction_data = self.contract.functions.addPlot(
             plot_name, plot_price, owner_metamask_id
-        ).buildTransaction({
+        ).build_transaction({
             'from': self.default_account,
             'gas': 2000000,  # Adjust gas value based on your contract requirements
-            'gasPrice': self.web3.toWei('20', 'gwei'),  # Adjust gas price based on your requirements
-            'nonce': self.web3.eth.getTransactionCount(self.default_account),
+            'gasPrice': self.web3.to_wei('20', 'gwei'),  # Adjust gas price based on your requirements
+            'nonce': self.web3.eth.get_transaction_count(self.default_account),
         })
 
 
@@ -173,10 +169,10 @@ class EthereumContractConnector:
         signed_transaction = self.web3.eth.account.sign_transaction(transaction_data, self.private_key)
 
         # Step 3: Send the signed transaction to the Ethereum network
-        transaction_hash = self.web3.eth.sendRawTransaction(signed_transaction.rawTransaction)
+        transaction_hash = self.web3.eth.send_raw_transaction(signed_transaction.rawTransaction)
 
         # Wait for the transaction to be mined
-        transaction_receipt = self.web3.eth.waitForTransactionReceipt(transaction_hash)
+        transaction_receipt = self.web3.eth.wait_for_transaction_receipt(transaction_hash)
 
         print(f"plot added successfully. Transaction Hash: {transaction_hash}")
     

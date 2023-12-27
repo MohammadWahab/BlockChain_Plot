@@ -8,19 +8,22 @@ from .ethereum_contract import EthereumContractConnector
 class CustomUserListView(generics.ListCreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
+    ethereum_connector = EthereumContractConnector()
 
     def perform_create(self, serializer):
+        
         email = self.request.data.get('email')
         nid_number = self.request.data.get('nid_number')
         meta_mask_id = self.request.data.get('meta_mask_id')
-
-        ethereum_connector = EthereumContractConnector()
-
         try:
-            ethereum_connector.add_owner(email, nid_number, meta_mask_id)
+            # Add print statements for debugging
+            print(f"Adding owner: email={email}, nid_number={nid_number}, meta_mask_id={meta_mask_id}")
+            self.ethereum_connector.add_owner(email, nid_number, meta_mask_id)
             serializer.save()
             return Response({'message': 'User added successfully'}, status=status.HTTP_201_CREATED)
         except Exception as e:
+            # Print the exception message for debugging
+            print(f"Error: {str(e)}")
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -34,7 +37,8 @@ class CustomUserDetailView(generics.RetrieveUpdateDestroyAPIView):
 class PlotListView(generics.ListCreateAPIView):
     queryset = Plot.objects.all()
     serializer_class = PlotSerializer
-    
+    ethereum_connector = EthereumContractConnector()
+
     def perform_create(self, serializer):
         # Retrieve the owner using the provided email
         owner_email = self.request.data.get('owner_email')
@@ -43,13 +47,21 @@ class PlotListView(generics.ListCreateAPIView):
         except CustomUser.DoesNotExist:
             raise serializers.ValidationError(f"No user with email '{owner_email}' found.")
 
-        # Set the owner and create the plot
-        serializer.save(owner=owner)
+        # Set the owner in the serializer, but don't save it yet
+        serializer.validated_data['owner'] = owner
+
+        # Create the plot instance without 'owner_email' field
+        plot_instance = serializer.save()
+
+        # Convert the price to an integer
+        price = int(plot_instance.price)
 
         # Call Ethereum client to add the plot on the blockchain
-        self.ethereum_client.add_plot(plot_instance.plot_number, plot_instance.price, owner.meta_mask_id)
+        self.ethereum_connector.add_plot(plot_instance.plot_number,price, owner.meta_mask_id)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+
 
         
 
